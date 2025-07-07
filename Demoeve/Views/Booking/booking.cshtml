@@ -1,0 +1,74 @@
+﻿@{
+    ViewData["Title"] = "Booking Page";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Event Booking</title>
+    <script>
+        async function loadEvents() {
+          const response = await fetch('/api/Event/getEvent');
+          const events = await response.json();
+          const select = document.getElementById('eventDropdown');
+          events.forEach(e => {
+            let option = document.createElement('option');
+            option.value = e.id;
+            option.text = e.Title;
+            select.appendChild(option);
+          });
+        }
+
+        function toggleProofUpload() {
+          const isOnline = document.querySelector('input[name="IsOnlinePayment"]:checked').value === "true";
+          document.getElementById('proofUpload').style.display = isOnline ? 'block' : 'none';
+        }
+
+        async function submitBooking(event) {
+          event.preventDefault();
+
+          const formData = new FormData(document.getElementById('bookingForm'));
+
+          const response = await fetch('/api/booking', {
+            method: 'POST',
+            body: formData
+          });
+
+          const result = await response.json();
+          alert(result.message || 'Booking submitted!');
+        }
+
+        window.onload = loadEvents;
+    </script>
+</head>
+<body>
+    <h2>Event Booking</h2>
+    <form id="bookingForm" onsubmit="submitBooking(event)">
+        <label>Name:</label><br />
+        <input type="text" name="CustomerName" required /><br /><br />
+
+        <label>Phone:</label><br />
+        <input type="text" name="Phone" required /><br /><br />
+
+        <label>Email:</label><br />
+        <input type="email" name="Email" required /><br /><br />
+
+        <label>Event:</label><br />
+        <select name="EventId" id="eventDropdown" required>
+            <option value="">-- Select Event --</option>
+        </select><br /><br />
+
+        <label>Payment Type:</label><br />
+        <input type="radio" name="IsOnlinePayment" value="true" onclick="toggleProofUpload()" required /> Online
+        <input type="radio" name="IsOnlinePayment" value="false" onclick="toggleProofUpload()" required /> Offline<br /><br />
+
+        <div id="proofUpload" style="display:none;">
+            <label>Upload Proof Document:</label><br />
+            <input type="file" name="proof" /><br /><br />
+        </div>
+
+        <button type="submit">Submit Booking</button>
+    </form>
+</body>
+</html>
